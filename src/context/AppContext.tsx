@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Quote } from '../data/quotes';
+import { Quote } from '@/data/quotes';
 
 interface AppContextType {
   favorites: number[];
