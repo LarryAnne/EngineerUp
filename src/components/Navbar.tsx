@@ -1,6 +1,6 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { Sun, Moon, Menu, X, BookOpen } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '@/context/AppContext';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 

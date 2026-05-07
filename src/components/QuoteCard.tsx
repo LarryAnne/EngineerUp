@@ -1,6 +1,6 @@
 import { Heart, Copy, Share2, Check } from 'lucide-react';
-import { Quote } from '../data/quotes';
-import { useApp } from '../context/AppContext';
+import { Quote } from '@/data/quotes';
+import { useApp } from '@/context/AppContext';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
