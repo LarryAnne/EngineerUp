@@ -1,90 +1,86 @@
+# Phase 2 — Backend Integration Plan
 
-# Import EngineerUp App into Lovable
+Existing frontend (UI, animations, routing) stays untouched. We extend it with Lovable Cloud (Supabase under the hood).
 
-## What this does
+## 1. Enable Lovable Cloud
+Provisions Postgres, Auth, Storage. Generates `src/integrations/supabase/client.ts` automatically.
 
-Brings your existing EngineerUp application — with all its pages, components, animations, theme switching, favorites, streak tracking, and responsive navigation — into the Lovable environment so it runs as a live preview. No redesign, no feature changes.
+## 2. Database schema (migrations)
+Tables exactly per spec (UUIDs, FKs, defaults):
+- `profiles` (linked to `auth.users`, auto-created via trigger on signup)
+- `quotes` (with `country`, `is_general`)
+- `favorites` (unique on user_id+quote_id)
+- `streaks`, `study_sessions`
+- `reviews`, `contact_messages`
+- `notifications`, `user_notifications`
+- `tasks`, `task_submissions`
 
-## Key adaptation
+**RLS enabled on every table.** Policies:
+- Users read/write only their own rows in personal tables (favorites, streaks, study_sessions, user_notifications, task_submissions)
+- `profiles`: user can read all, update own
+- `quotes`, `tasks`, `notifications`: public read
+- `reviews`: public read, insert own, update/delete own
+- `contact_messages`: anyone can insert; only owner reads own (admin role added later)
 
-Your app uses React Router with a traditional SPA structure. Lovable uses TanStack Start with file-based routing. The plan adapts the routing layer while keeping every component, page, animation, and style identical.
+Trigger: on `auth.users` insert → create `profiles` row from raw_user_meta_data (username, country, contact).
 
-## Steps
+Seed: copy current `src/data/quotes.ts` into `quotes` table (is_general=true) so the feed works after migration.
 
-### 1. Install dependencies
+## 3. Storage buckets
+- `avatars` (public)
+- `task-proofs` (private, RLS by user folder)
+- `review-media` (public, optional)
 
-Add the packages your app needs that aren't in the current Lovable project:
-- `motion` (Framer Motion animations)
-- `canvas-confetti` (challenge page confetti)
-- `react-responsive-masonry` (masonry layouts)
-- `react-slick` (carousels)
-- `@mui/material`, `@mui/icons-material`, `@emotion/react`, `@emotion/styled` (MUI components)
-- `react-dnd`, `react-dnd-html5-backend` (drag and drop)
-- `react-popper`, `@popperjs/core` (popover positioning)
+## 4. Services & hooks layer
+New folders:
+- `src/services/` — `quotes.ts`, `favorites.ts`, `streaks.ts`, `studySessions.ts`, `reviews.ts`, `contact.ts`, `notifications.ts`, `tasks.ts`, `auth.ts`, `storage.ts`
+- `src/hooks/` — `useAuth`, `useFavorites`, `useStreak`, `useStudySession`, `useNotifications`, `useReviews`, `useTasks`, `useTheme` (already implicit)
 
-### 2. Copy all source files
+**Hybrid mode**: each hook checks `useAuth().user`. If guest → localStorage path (current behavior). If authed → Supabase. Switch is transparent to UI.
 
-- Copy all page components (Home, Quotes, Stories, Courses, Challenge, Dashboard, Favorites, Motivation, About) into `src/components/pages/`
-- Copy custom components (Navbar, BottomNav, Footer, QuoteCard) into `src/components/`
-- Copy data files (quotes, stories, courses, challenges) into `src/data/`
-- Copy the AppContext provider into `src/context/`
-- Copy image assets (IMG.jpeg, Joshua.jpg) into `src/assets/`
+## 5. Auth
+- New routes `/login`, `/signup`, `/profile`, `/notifications`
+- Signup form: username, email, password, country (African countries dropdown), contact
+- Google OAuth button (uses Supabase managed Google provider — user enables in Cloud settings; we wire the call)
+- `useAuth` exposes `user`, `profile`, `signIn`, `signUp`, `signInWithGoogle`, `signOut`
+- `AppContext` updated to consume `useAuth` and migrate guest localStorage favorites into DB on first login
 
-### 3. Create TanStack Start route files
+## 6. Personalization
+`quotesService.getFeed()`:
+- Guest → only `is_general=true`
+- Authed → country-specific first, then general (single query ordered by `country = profile.country DESC`)
 
-Create route files for each page that render the existing page components:
-- `src/routes/index.tsx` → Home page
-- `src/routes/quotes.tsx` → Quotes page
-- `src/routes/stories.tsx` → Stories page
-- `src/routes/courses.tsx` → Courses page
-- `src/routes/challenge.tsx` → Challenge page
-- `src/routes/dashboard.tsx` → Dashboard page
-- `src/routes/favorites.tsx` → Favorites page
-- `src/routes/motivation.tsx` → Motivation page
-- `src/routes/about.tsx` → About page
+## 7. Notifications
+- `notifications` table: global + country-targeted
+- `useNotifications` returns unseen count + list filtered by user country / global
+- `/notifications` page lists them; marking seen writes to `user_notifications`
+- "Quote of the Day" surfaced via existing daily quote logic, extended to insert a notification row when a new day starts (client-side trigger acceptable for now)
 
-Each route file will simply import and render the existing page component.
+## 8. Tasks with proof upload
+- `Challenge` page extended:
+  - Upload input → `task-proofs/{user_id}/{task_id}-{ts}.jpg`
+  - "Mark as Completed" disabled until upload returns a URL
+  - On click: insert `task_submissions` row with `completed=true`
+- Guest users: upload disabled with prompt to sign in
 
-### 4. Update root layout
+## 9. Reviews & Contact
+- Add a Reviews section (form + list) — placed inside existing About or a small section on Home, no layout redesign
+- Existing Contact form (if any) wired to `contact_messages` insert; otherwise add minimal form on About page
 
-Modify `src/routes/__root.tsx` to include:
-- The AppProvider context wrapper
-- Navbar component
-- BottomNav component
-- Footer component
-- Toaster (sonner)
-- Proper head metadata for EngineerUp
+## 10. Routing additions
+- `src/routes/login.tsx`, `signup.tsx`, `profile.tsx`, `notifications.tsx`
+- Navbar gets Login/Profile entry conditionally
+- Protected routes: `/profile`, `/notifications` redirect guests to `/login`
 
-This mirrors the layout structure from your existing `App.tsx`.
+## 11. Error handling
+Toasts (sonner already installed) on: auth errors, upload failures, duplicate favorite, invalid rating, network errors.
 
-### 5. Adapt styles
+## Technical notes
+- Use generated `@/integrations/supabase/client` (no manual `supabaseClient.ts`; it's already the pattern Lovable Cloud uses, equivalent to the spec's request).
+- `has_role` pattern reserved for future admin (no admin UI in this phase, but we add `app_role` enum + `user_roles` table + `has_role` function so policies for admin moderation already exist).
+- All DB writes via services, never inline in components.
 
-Replace `src/styles.css` with your project's theme system (theme.css + tailwind.css), preserving your exact color tokens, dark mode variables, typography, and glassmorphism navbar styling.
-
-### 6. Fix import paths
-
-Update all `react-router` imports in components to use `@tanstack/react-router` equivalents:
-- `Link` from `@tanstack/react-router`
-- `useLocation` from `@tanstack/react-router`
-- Remove `BrowserRouter`, `Routes`, `Route` usage (handled by file-based routing)
-
-### 7. Verify and launch
-
-Confirm the preview loads with all pages accessible, navigation working, theme toggle functional, and animations playing.
-
-## What stays the same
-
-- All visual design, colors, typography, spacing
-- Glassmorphism navbar with backdrop blur
-- All Framer Motion animations and transitions
-- Dark/light theme switching via AppContext
-- LocalStorage persistence (favorites, streak, completed tasks)
-- Mobile bottom navigation
-- Responsive layouts
-- All page content and data
-
-## What is NOT included (Phase 2)
-
-- Authentication
-- Database/Supabase integration
-- Backend logic
+## Out of scope (deferred)
+- Admin dashboard UI
+- Email sending
+- Push notifications
