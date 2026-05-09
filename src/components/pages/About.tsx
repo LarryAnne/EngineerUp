@@ -2,6 +2,8 @@ import { motion } from 'motion/react';
 import { BookOpen, Heart, Target, Users, Mail, Phone } from 'lucide-react';
 import larryPic from '@/assets/IMG.jpeg';
 import joshuaPic from '@/assets/Joshua.jpg';
+import { Reviews } from '@/components/Reviews';
+import { ContactForm } from '@/components/ContactForm';
 
 export function About() {
   const developers = [
@@ -201,14 +203,24 @@ export function About() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
+          className="mt-16"
+        >
+          <Reviews />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           className="mt-16 text-center"
         >
           <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
             Questions or Feedback?
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            We'd love to hear from you. Reach out to any of our team members.
+            We'd love to hear from you. Send us a message below.
           </p>
+          <ContactForm />
         </motion.div>
       </div>
     </div>
