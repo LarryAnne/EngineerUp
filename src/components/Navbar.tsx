@@ -1,11 +1,13 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Sun, Moon, Menu, X, BookOpen } from 'lucide-react';
+import { Sun, Moon, Menu, X, BookOpen, User, LogIn, Bell } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Navbar() {
   const { theme, toggleTheme } = useApp();
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -45,6 +47,20 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
+              {user ? (
+                <>
+                  <Link to="/notifications" aria-label="Notifications" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <Bell className="w-5 h-5" />
+                  </Link>
+                  <Link to="/profile" aria-label="Profile" className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <User className="w-5 h-5" />
+                  </Link>
+                </>
+              ) : (
+                <Link to="/login" className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-1">
+                  <LogIn className="w-4 h-4" /> Sign in
+                </Link>
+              )}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
