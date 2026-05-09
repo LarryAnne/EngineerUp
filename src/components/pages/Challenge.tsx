@@ -1,13 +1,20 @@
 import { motion } from 'motion/react';
-import { RefreshCw, CheckCircle, Target, Calendar } from 'lucide-react';
+import { RefreshCw, CheckCircle, Target, Calendar, Upload } from 'lucide-react';
 import { getDailyChallenge } from '@/data/challenges';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { Link } from '@tanstack/react-router';
 
 export function Challenge() {
   const dailyChallenge = getDailyChallenge();
   const { markTaskComplete, completedTasks } = useApp();
+  const { user } = useAuth();
   const [showConfetti, setShowConfetti] = useState(false);
+  const [proofUrl, setProofUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const isCompleted = completedTasks.includes(dailyChallenge.id);
 
   const difficultyColors = {
@@ -16,12 +23,30 @@ export function Challenge() {
     Hard: 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
   };
 
-  const handleComplete = () => {
-    if (!isCompleted) {
-      markTaskComplete(dailyChallenge.id);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    const path = `${user.id}/${dailyChallenge.id}-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from('task-proofs').upload(path, file, { upsert: false });
+    if (error) {
+      toast.error('Upload failed: ' + error.message);
+    } else {
+      setProofUrl(path);
+      toast.success('Proof uploaded');
     }
+    setUploading(false);
+  };
+
+  const handleComplete = async () => {
+    if (isCompleted) return;
+    if (user && !proofUrl) {
+      toast.error('Please upload a proof image first');
+      return;
+    }
+    await markTaskComplete(dailyChallenge.id, proofUrl ?? undefined);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   const date = new Date().toLocaleDateString('en-US', {
@@ -86,13 +111,27 @@ export function Challenge() {
           </p>
 
           {!isCompleted ? (
-            <button
-              onClick={handleComplete}
-              className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <CheckCircle className="w-5 h-5" />
-              <span>Mark as Complete</span>
-            </button>
+            <div className="space-y-3">
+              {user ? (
+                <label className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 transition-colors text-gray-700 dark:text-gray-300">
+                  <Upload className="w-5 h-5" />
+                  <span>{uploading ? 'Uploading...' : proofUrl ? 'Proof uploaded ✓ (replace)' : 'Upload proof image'}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+                </label>
+              ) : (
+                <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+                  <Link to="/login" className="text-blue-600 dark:text-blue-400 underline">Sign in</Link> to upload proof and track challenges.
+                </p>
+              )}
+              <button
+                onClick={handleComplete}
+                disabled={uploading}
+                className="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Mark as Complete</span>
+              </button>
+            </div>
           ) : (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <p className="text-green-800 dark:text-green-200 text-center">

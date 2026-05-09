@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoriesRouteImport } from './routes/stories'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as QuotesRouteImport } from './routes/quotes'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MotivationRouteImport } from './routes/motivation'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
@@ -24,14 +28,34 @@ const StoriesRoute = StoriesRouteImport.update({
   path: '/stories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuotesRoute = QuotesRouteImport.update({
   id: '/quotes',
   path: '/quotes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MotivationRoute = MotivationRouteImport.update({
   id: '/motivation',
   path: '/motivation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -72,8 +96,12 @@ export interface FileRoutesByFullPath {
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
   '/favorites': typeof FavoritesRoute
+  '/login': typeof LoginRoute
   '/motivation': typeof MotivationRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/quotes': typeof QuotesRoute
+  '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +111,12 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
   '/favorites': typeof FavoritesRoute
+  '/login': typeof LoginRoute
   '/motivation': typeof MotivationRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/quotes': typeof QuotesRoute
+  '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
 }
 export interface FileRoutesById {
@@ -95,8 +127,12 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
   '/favorites': typeof FavoritesRoute
+  '/login': typeof LoginRoute
   '/motivation': typeof MotivationRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/quotes': typeof QuotesRoute
+  '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +144,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/favorites'
+    | '/login'
     | '/motivation'
+    | '/notifications'
+    | '/profile'
     | '/quotes'
+    | '/signup'
     | '/stories'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +159,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/favorites'
+    | '/login'
     | '/motivation'
+    | '/notifications'
+    | '/profile'
     | '/quotes'
+    | '/signup'
     | '/stories'
   id:
     | '__root__'
@@ -130,8 +174,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/favorites'
+    | '/login'
     | '/motivation'
+    | '/notifications'
+    | '/profile'
     | '/quotes'
+    | '/signup'
     | '/stories'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +190,12 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   DashboardRoute: typeof DashboardRoute
   FavoritesRoute: typeof FavoritesRoute
+  LoginRoute: typeof LoginRoute
   MotivationRoute: typeof MotivationRoute
+  NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
   QuotesRoute: typeof QuotesRoute
+  SignupRoute: typeof SignupRoute
   StoriesRoute: typeof StoriesRoute
 }
 
@@ -156,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quotes': {
       id: '/quotes'
       path: '/quotes'
@@ -163,11 +222,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuotesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motivation': {
       id: '/motivation'
       path: '/motivation'
       fullPath: '/motivation'
       preLoaderRoute: typeof MotivationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -222,20 +302,14 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   DashboardRoute: DashboardRoute,
   FavoritesRoute: FavoritesRoute,
+  LoginRoute: LoginRoute,
   MotivationRoute: MotivationRoute,
+  NotificationsRoute: NotificationsRoute,
+  ProfileRoute: ProfileRoute,
   QuotesRoute: QuotesRoute,
+  SignupRoute: SignupRoute,
   StoriesRoute: StoriesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
