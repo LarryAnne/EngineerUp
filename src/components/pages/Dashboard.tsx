@@ -46,39 +46,39 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 text-gray-900 dark:text-white">
             Progress Dashboard
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-lg text-gray-600 dark:text-gray-400">
             Track your journey and celebrate your wins
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 dark:border-gray-700"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 ${stat.textColor}`} />
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                  <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.textColor}`} />
                 </div>
               </div>
-              <div className="text-3xl font-bold mb-1 text-gray-900 dark:text-white">
+              <div className="text-xl sm:text-3xl font-bold mb-1 text-gray-900 dark:text-white">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 {stat.label}
               </div>
             </motion.div>
