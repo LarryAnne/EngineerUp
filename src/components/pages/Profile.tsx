@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Mail, MapPin, Phone, Calendar, IdCard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,8 +45,63 @@ export function Profile() {
 
   if (!user) return null;
 
+  const initial = (profile?.username || user.email || "?").charAt(0).toUpperCase();
+  const joined = user.created_at
+    ? new Date(user.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    : "—";
+
   return (
     <div className="min-h-screen py-12 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-xl mx-auto mb-6 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm"
+      >
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold border border-white/30">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold truncate">{profile?.username || "Welcome"}</h2>
+              <p className="text-sm text-white/80 truncate flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5" /> {user.email}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-gray-500 dark:text-gray-400">Country:</span>
+            <span className="font-medium truncate">{profile?.country || "—"}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-gray-500 dark:text-gray-400">Contact:</span>
+            <span className="font-medium truncate">{profile?.contact || "—"}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-gray-500 dark:text-gray-400">Joined:</span>
+            <span className="font-medium">{joined}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <IdCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-gray-500 dark:text-gray-400">ID:</span>
+            <span className="font-mono text-xs truncate">{user.id.slice(0, 8)}…</span>
+          </div>
+          <div className="sm:col-span-2 pt-2">
+            <button
+              onClick={handleLogout}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> Log out
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -54,7 +109,7 @@ export function Profile() {
       >
         <div className="flex items-center gap-3 mb-6">
           <User className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your profile</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit profile</h1>
         </div>
         <div className="space-y-4">
           <div>
