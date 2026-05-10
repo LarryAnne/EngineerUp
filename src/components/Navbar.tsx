@@ -94,7 +94,26 @@ export function Navbar() {
             className=" fixed top-12 w-full z-10 md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
           >
             <div className="px-4 py-4 space-y-3">
-              {links.map(link => (
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Stories', path: '/stories' },
+                { name: 'Courses', path: '/courses' },
+                { name: 'Dashboard', path: '/dashboard' },
+                { name: 'Favorites', path: '/favorites' },
+                { name: 'Quotes', path: '/quotes' },
+                { name: 'Motivation', path: '/motivation' },
+                { name: 'Challenge', path: '/challenge' },
+                { name: 'About', path: '/about' },
+                ...(user
+                  ? [
+                      { name: 'Notifications', path: '/notifications' },
+                      { name: 'Profile', path: '/profile' },
+                    ]
+                  : [
+                      { name: 'Sign in', path: '/login' },
+                      { name: 'Create account', path: '/signup' },
+                    ]),
+              ].map(link => (
                 <Link
                   key={link.path}
                   to={link.path}
