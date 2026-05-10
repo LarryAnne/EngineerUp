@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { getTodayStory, stories } from '@/data/stories';
 import { Link } from '@tanstack/react-router';
+import { StoryReader } from '@/components/StoryReader';
 
 export function Stories() {
   const todayStory = getTodayStory();
@@ -68,6 +69,10 @@ export function Stories() {
             <p className="text-xl text-gray-600 dark:text-gray-400">
               {todayStory.subtitle}
             </p>
+          </div>
+
+          <div className="mb-8">
+            <StoryReader title={todayStory.title} text={todayStory.content} />
           </div>
 
           <div className="prose prose-lg dark:prose-invert max-w-none">
