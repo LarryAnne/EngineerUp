@@ -12,6 +12,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
+import { FloatingAuthButton } from "@/components/FloatingAuthButton";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
@@ -127,6 +128,7 @@ function RootComponent() {
           </main>
           <Footer />
           <BottomNav />
+          <FloatingAuthButton />
           <Toaster />
         </div>
       </AppProvider>
