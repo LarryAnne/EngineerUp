@@ -79,7 +79,7 @@ export function Footer() {
 
         <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8">
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            © 2026 EngineerUp. Built with ❤️ for Cameroonian students. All rights reserved.
+            © 2026 EngineerUp. Built by African students, for African students. All rights reserved.
           </p>
         </div>
       </div>

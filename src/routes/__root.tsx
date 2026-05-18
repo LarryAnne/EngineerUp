@@ -13,6 +13,7 @@ import { Navbar } from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
 import { FloatingAuthButton } from "@/components/FloatingAuthButton";
+import { useLocation } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
@@ -126,7 +127,7 @@ function RootComponent() {
           <main>
             <Outlet />
           </main>
-          <Footer />
+          <ConditionalFooter />
           <BottomNav />
           <FloatingAuthButton />
           <Toaster />
@@ -135,4 +136,10 @@ function RootComponent() {
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function ConditionalFooter() {
+  const location = useLocation();
+  if (location.pathname.startsWith("/profile")) return null;
+  return <Footer />;
 }
