@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { BookOpen, Mail, Phone } from 'lucide-react';
+import { BookOpen, Phone } from 'lucide-react';
 
 
 export function Footer() {
