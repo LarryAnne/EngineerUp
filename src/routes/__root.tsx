@@ -127,7 +127,7 @@ function RootComponent() {
           <main>
             <Outlet />
           </main>
-          <Footer />
+          <ConditionalFooter />
           <BottomNav />
           <FloatingAuthButton />
           <Toaster />
