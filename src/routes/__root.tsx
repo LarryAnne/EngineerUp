@@ -137,3 +137,9 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
+function ConditionalFooter() {
+  const location = useLocation();
+  if (location.pathname.startsWith("/profile")) return null;
+  return <Footer />;
+}
