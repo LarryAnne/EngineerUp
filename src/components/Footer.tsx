@@ -52,27 +52,24 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-3">
-              <li className="flex items-start gap-2">
-                <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Larry Anne</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">+237 650 204 277</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Menang Jedkings</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">+237 676 910 508</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Orock Joshua</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">+237 677 155 516</p>
-                </div>
-              </li>
+              {[
+                { name: 'Larry Anne', phone: '+237 650 204 277', wa: '237650204277' },
+                { name: 'Menang Jedkings', phone: '+237 676 910 508', wa: '237676910508' },
+                { name: 'Orock Joshua', phone: '+237 677 155 516', wa: '237677155516' },
+              ].map((c) => (
+                <li key={c.wa} className="flex items-start gap-2">
+                  <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <a
+                    href={`https://wa.me/${c.wa}?text=${encodeURIComponent("Hi " + c.name + ", I'm reaching out from EngineerUp.")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group"
+                  >
+                    <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">{c.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">{c.phone}</p>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
