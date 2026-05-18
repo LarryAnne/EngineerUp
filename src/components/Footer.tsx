@@ -13,7 +13,7 @@ export function Footer() {
               <span className="text-lg font-bold">EngineerUp</span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Empowering Cameroonian software engineering students with realistic motivation,
+              Empowering African software engineering students with realistic motivation,
               practical guidance, and a supportive community to succeed in their academic journey.
             </p>
           </div>

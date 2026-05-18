@@ -5,7 +5,7 @@ export const Route = createFileRoute("/stories")({
   head: () => ({
     meta: [
       { title: "Student Stories — EngineerUp" },
-      { name: "description", content: "Real stories of struggle, persistence, and triumph from Cameroonian engineering students." },
+      { name: "description", content: "Real stories of struggle, persistence, and triumph from African engineering students." },
     ],
   }),
   component: Stories,

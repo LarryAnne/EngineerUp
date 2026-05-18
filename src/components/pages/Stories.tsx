@@ -38,7 +38,7 @@ export function Stories() {
 
             <p className="text-lg sm:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
               Every day, we share a real story of struggle, persistence, and triumph from
-              Cameroonian students just like you. Today's story might be exactly what you need to hear.
+              African students just like you. Today's story might be exactly what you need to hear.
             </p>
 
             <a

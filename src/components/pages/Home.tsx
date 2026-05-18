@@ -32,7 +32,7 @@ export function Home() {
               <span className="text-yellow-300">Staying Motivated Shouldn't Be.</span>
             </h1>
             <p className="text-sm sm:text-lg md:text-xl text-gray-100 max-w-3xl mx-auto mb-6 sm:mb-8">
-              Built for Cameroonian Year One software engineering students who are struggling.
+              Built for African Year One software engineering students who are struggling.
               Real stories, practical advice, and daily motivation to help you succeed.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
@@ -177,7 +177,7 @@ export function Home() {
               Ready to Transform Your Academic Journey?
             </h2>
             <p className="text-lg text-gray-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of Cameroonian students who are building consistency,
+              Join thousands of African students who are building consistency,
               resilience, and success one day at a time.
             </p>
             <Link

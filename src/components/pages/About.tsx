@@ -57,7 +57,7 @@ export function About() {
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">Our Mission</h2>
             <p className="text-lg text-gray-100 mb-4 leading-relaxed">
-              EngineerUp was born from a simple observation: Cameroonian engineering students face
+              EngineerUp was born from a simple observation: African engineering students face
               unique challenges—financial stress, power outages, limited resources, overwhelming coursework,
               and the pressure of family expectations.
             </p>
