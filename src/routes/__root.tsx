@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "EngineerUp" },
-      { name: "description", content: "Empowering Cameroonian software engineering students with realistic motivation, practical guidance, and a supportive community." },
+      { name: "description", content: "Empowering African software engineering students with realistic motivation, practical guidance, and a supportive community." },
       { name: "author", content: "EngineerUp" },
       { property: "og:title", content: "EngineerUp" },
       { property: "og:description", content: "Engineering is Hard. Staying Motivated Shouldn't Be." },
