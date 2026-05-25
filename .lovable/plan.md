@@ -1,86 +1,72 @@
-# Phase 2 — Backend Integration Plan
 
-Existing frontend (UI, animations, routing) stays untouched. We extend it with Lovable Cloud (Supabase under the hood).
+# Phase 3 — Living Content Engine
 
-## 1. Enable Lovable Cloud
-Provisions Postgres, Auth, Storage. Generates `src/integrations/supabase/client.ts` automatically.
+Replace static arrays with an AI-driven, personalized, non-repeating content pipeline backed by Lovable Cloud + Lovable AI Gateway.
 
-## 2. Database schema (migrations)
-Tables exactly per spec (UUIDs, FKs, defaults):
-- `profiles` (linked to `auth.users`, auto-created via trigger on signup)
-- `quotes` (with `country`, `is_general`)
-- `favorites` (unique on user_id+quote_id)
-- `streaks`, `study_sessions`
-- `reviews`, `contact_messages`
-- `notifications`, `user_notifications`
-- `tasks`, `task_submissions`
+## 1. Backend (Lovable Cloud)
 
-**RLS enabled on every table.** Policies:
-- Users read/write only their own rows in personal tables (favorites, streaks, study_sessions, user_notifications, task_submissions)
-- `profiles`: user can read all, update own
-- `quotes`, `tasks`, `notifications`: public read
-- `reviews`: public read, insert own, update/delete own
-- `contact_messages`: anyone can insert; only owner reads own (admin role added later)
+### New tables (migrations)
+- `generated_quotes` — id, text, author, category[], country (nullable), tone, created_at, generated_by (ai|seed), times_served
+- `generated_stories` — id, title, body, tone, country (nullable), read_minutes, created_at, generated_by
+- `generated_tasks` — id, title, description, difficulty (easy|medium|hard), minutes, pressure_level, category, country (nullable), created_at
+- `viewed_quotes` — user_id, quote_id, viewed_at (PK user_id+quote_id)
+- `viewed_stories` — user_id, story_id, viewed_at
+- `viewed_tasks` — user_id, task_id, viewed_at (separate from completion)
+- `daily_quote_log` — user_id (nullable for guest/global), quote_id, day (date), country
+- `task_submissions` already exists — extend with `proof_url NOT NULL` enforcement (column already there)
 
-Trigger: on `auth.users` insert → create `profiles` row from raw_user_meta_data (username, country, contact).
+All `viewed_*` and `*_submissions` have RLS (own rows only). `generated_*` tables: public read, server-only insert via service role.
 
-Seed: copy current `src/data/quotes.ts` into `quotes` table (is_general=true) so the feed works after migration.
+### Storage
+- Reuse existing `task-proofs` bucket (private, user-folder RLS).
 
-## 3. Storage buckets
-- `avatars` (public)
-- `task-proofs` (private, RLS by user folder)
-- `review-media` (public, optional)
+## 2. AI Generation Layer (server functions, NOT in components)
 
-## 4. Services & hooks layer
-New folders:
-- `src/services/` — `quotes.ts`, `favorites.ts`, `streaks.ts`, `studySessions.ts`, `reviews.ts`, `contact.ts`, `notifications.ts`, `tasks.ts`, `auth.ts`, `storage.ts`
-- `src/hooks/` — `useAuth`, `useFavorites`, `useStreak`, `useStudySession`, `useNotifications`, `useReviews`, `useTasks`, `useTheme` (already implicit)
+`src/lib/generation/*.functions.ts` using `createServerFn` + Lovable AI Gateway (`google/gemini-2.5-flash`, free during promo):
 
-**Hybrid mode**: each hook checks `useAuth().user`. If guest → localStorage path (current behavior). If authed → Supabase. Switch is transparent to UI.
+- `generateQuotes({ count, country, categories })` — returns N quotes, inserts into `generated_quotes`
+- `generateStories({ count, country })` — same pattern
+- `generateTasks({ count, country, difficulty })` — same pattern
 
-## 5. Auth
-- New routes `/login`, `/signup`, `/profile`, `/notifications`
-- Signup form: username, email, password, country (African countries dropdown), contact
-- Google OAuth button (uses Supabase managed Google provider — user enables in Cloud settings; we wire the call)
-- `useAuth` exposes `user`, `profile`, `signIn`, `signUp`, `signInWithGoogle`, `signOut`
-- `AppContext` updated to consume `useAuth` and migrate guest localStorage favorites into DB on first login
+Each calls the AI gateway with a strict JSON-schema prompt enforcing the realism rules from the brief (African student context, no clichés, struggle→effort→outcome, measurable tasks).
 
-## 6. Personalization
-`quotesService.getFeed()`:
-- Guest → only `is_general=true`
-- Authed → country-specific first, then general (single query ordered by `country = profile.country DESC`)
+### Feed server functions (called by UI)
+- `getQuoteFeed({ limit })` — returns unseen quotes for user (country-prioritized), tops up via generator if pool < threshold, logs views
+- `getStoryFeed({ limit })`
+- `getTaskFeed({ limit })`
+- `getDailyQuote()` — picks/generates the day's quote, writes to `daily_quote_log`, ensures not repeated within 30 days
+- `markQuoteViewed`, `markStoryViewed`, `markTaskViewed`
+- `submitTaskCompletion({ taskId, proofUrl })` — requires non-empty proof_url
 
-## 7. Notifications
-- `notifications` table: global + country-targeted
-- `useNotifications` returns unseen count + list filtered by user country / global
-- `/notifications` page lists them; marking seen writes to `user_notifications`
-- "Quote of the Day" surfaced via existing daily quote logic, extended to insert a notification row when a new day starts (client-side trigger acceptable for now)
+All user-context fns use `requireSupabaseAuth`; guest variants use `supabaseAdmin` and skip `viewed_*` tracking.
 
-## 8. Tasks with proof upload
-- `Challenge` page extended:
-  - Upload input → `task-proofs/{user_id}/{task_id}-{ts}.jpg`
-  - "Mark as Completed" disabled until upload returns a URL
-  - On click: insert `task_submissions` row with `completed=true`
-- Guest users: upload disabled with prompt to sign in
+### Top-up strategy (anti-exhaustion)
+On feed fetch: if `unseen_for_user < 10`, fire-and-forget `generateX` to refill the global pool. Idempotent via short-lived `generation_locks` row (or simple count check).
 
-## 9. Reviews & Contact
-- Add a Reviews section (form + list) — placed inside existing About or a small section on Home, no layout redesign
-- Existing Contact form (if any) wired to `contact_messages` insert; otherwise add minimal form on About page
+## 3. Frontend Wiring
 
-## 10. Routing additions
-- `src/routes/login.tsx`, `signup.tsx`, `profile.tsx`, `notifications.tsx`
-- Navbar gets Login/Profile entry conditionally
-- Protected routes: `/profile`, `/notifications` redirect guests to `/login`
+- Delete usage of `src/data/quotes.ts`, `src/data/stories.ts`, `src/data/challenges.ts` from pages (keep files as seeds — see §5).
+- New hooks: `useQuoteFeed`, `useStoryFeed`, `useTaskFeed`, `useDailyQuote` — all wrap server fns via TanStack Query.
+- `Quotes`, `Stories`, `Challenge`, `Motivation`, `Home` pages switched to hooks. No layout changes.
+- `Challenge` page: upload-required gate already exists in `AppContext.markTaskComplete` (proofUrl param). Enforce in UI — disable "Mark Completed" until upload succeeds and returns a URL from `task-proofs/{userId}/{taskId}-{ts}`.
 
-## 11. Error handling
-Toasts (sonner already installed) on: auth errors, upload failures, duplicate favorite, invalid rating, network errors.
+## 4. Africa-centered imagery
+Generated content (quotes/stories) `image_url` field populated from a curated pool of African-student stock images stored in `public/generated/` (dark, brown, light-skinned). Generator picks at random by tone. No AI image generation per quote (cost) — rotating curated pool.
+
+## 5. Seed data
+On first run, copy current `src/data/quotes.ts` + `stories.ts` + `challenges.ts` into the generated_* tables so the app works instantly while AI top-ups happen in background.
+
+## 6. Daily Quote Notification
+- `getDailyQuote()` server fn runs on Home mount (client trigger acceptable for now per existing plan).
+- Inserts row into existing `notifications` + `user_notifications` so it shows in the Notifications page bell.
+
+## 7. Out of scope (deferred to Phase 4)
+- Admin moderation UI (schema is ready)
+- Email/push delivery of daily quote
+- pg_cron scheduled mass generation (currently lazy/on-demand top-up)
 
 ## Technical notes
-- Use generated `@/integrations/supabase/client` (no manual `supabaseClient.ts`; it's already the pattern Lovable Cloud uses, equivalent to the spec's request).
-- `has_role` pattern reserved for future admin (no admin UI in this phase, but we add `app_role` enum + `user_roles` table + `has_role` function so policies for admin moderation already exist).
-- All DB writes via services, never inline in components.
-
-## Out of scope (deferred)
-- Admin dashboard UI
-- Email sending
-- Push notifications
+- Lovable AI Gateway via `LOVABLE_API_KEY` (server env). Model: `google/gemini-2.5-flash`. Structured output via `response_format: json_schema`.
+- All inserts use `supabaseAdmin` from server fns; reads honoring RLS use `requireSupabaseAuth` client.
+- Anti-repetition query pattern: `SELECT * FROM generated_quotes q WHERE NOT EXISTS (SELECT 1 FROM viewed_quotes v WHERE v.user_id = $uid AND v.quote_id = q.id) ORDER BY (country = $userCountry) DESC, random() LIMIT $n`.
+- All generation fns return typed results; failures fall back to existing pool (never block UI).
