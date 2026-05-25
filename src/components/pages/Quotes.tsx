@@ -1,19 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Search, Filter } from 'lucide-react';
-import { quotes, categories } from '@/data/quotes';
+import { Search, Filter, Loader2 } from 'lucide-react';
 import { QuoteCard } from '@/components/QuoteCard';
+import { useQuoteFeed } from '@/hooks/useContent';
+
+const CATEGORIES = ['All', 'Discipline', 'Failure', 'Exams', 'Consistency', 'Stress', 'Family', 'Focus', 'Resilience', 'Burnout', 'Hope'];
 
 export function Quotes() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: quotes = [], isLoading } = useQuoteFeed(60);
 
-  const filteredQuotes = quotes.filter(quote => {
-    const matchesCategory = selectedCategory === 'All' || quote.category.includes(selectedCategory);
-    const matchesSearch = quote.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         quote.author.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredQuotes = useMemo(
+    () =>
+      quotes.filter((quote) => {
+        const matchesCategory =
+          selectedCategory === 'All' || quote.category.includes(selectedCategory);
+        const matchesSearch =
+          quote.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          quote.author.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      }),
+    [quotes, selectedCategory, searchQuery],
+  );
 
   return (
     <div className="min-h-screen py-8">
@@ -27,7 +36,7 @@ export function Quotes() {
             Motivational Quotes
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Find inspiration that speaks to your struggle
+            Fresh, AI-curated quotes for African students. New ones appear as you read.
           </p>
         </motion.div>
 
@@ -45,7 +54,7 @@ export function Quotes() {
 
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
-            {categories.map(category => (
+            {CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -65,16 +74,22 @@ export function Quotes() {
           Showing {filteredQuotes.length} {filteredQuotes.length === 1 ? 'quote' : 'quotes'}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredQuotes.map((quote, index) => (
-            <QuoteCard key={quote.id} quote={quote} index={index} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredQuotes.map((quote, index) => (
+              <QuoteCard key={quote.id} quote={quote} index={index} />
+            ))}
+          </div>
+        )}
 
-        {filteredQuotes.length === 0 && (
+        {!isLoading && filteredQuotes.length === 0 && (
           <div className="text-center py-20">
             <p className="text-xl text-gray-500 dark:text-gray-400">
-              No quotes found. Try a different search or category.
+              No quotes found. New ones are being generated — try again in a moment.
             </p>
           </div>
         )}

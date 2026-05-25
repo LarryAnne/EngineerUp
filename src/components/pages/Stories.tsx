@@ -1,17 +1,36 @@
 import { motion } from 'motion/react';
-import { Calendar, ArrowRight } from 'lucide-react';
-import { getTodayStory, stories } from '@/data/stories';
+import { Calendar, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { StoryReader } from '@/components/StoryReader';
+import { useStoryFeed, useTodayStory } from '@/hooks/useContent';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
+import { markStoryViewed } from '@/services/content';
 
 export function Stories() {
-  const todayStory = getTodayStory();
+  const { user } = useAuth();
+  const { data: todayStory, isLoading } = useTodayStory();
+  const { data: feed = [] } = useStoryFeed(12);
+
+  // Mark the surfaced story as viewed so the user doesn't see it again.
+  useEffect(() => {
+    if (user && todayStory) {
+      void markStoryViewed(user.id, todayStory.id);
+    }
+  }, [user, todayStory]);
+
   const date = new Date();
-  const formattedDate = date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  }).toUpperCase();
+  const formattedDate = date
+    .toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })
+    .toUpperCase();
+
+  if (isLoading || !todayStory) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -37,8 +56,8 @@ export function Stories() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-              Every day, we share a real story of struggle, persistence, and triumph from
-              African students just like you. Today's story might be exactly what you need to hear.
+              Every day, a real story of struggle, persistence, and triumph from
+              African students just like you.
             </p>
 
             <a
@@ -66,8 +85,11 @@ export function Stories() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900 dark:text-white">
               {todayStory.title}
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              {todayStory.subtitle}
+            {todayStory.subtitle && (
+              <p className="text-xl text-gray-600 dark:text-gray-400">{todayStory.subtitle}</p>
+            )}
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              ~{todayStory.read_minutes} min read
             </p>
           </div>
 
@@ -77,16 +99,13 @@ export function Stories() {
 
           <div className="prose prose-lg dark:prose-invert max-w-none">
             {todayStory.content.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p
+                key={index}
+                className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed"
+              >
                 {paragraph}
               </p>
             ))}
-          </div>
-
-          <div className="mt-12 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border-l-4 border-blue-600">
-            <p className="text-lg text-gray-800 dark:text-gray-200 italic">
-              "The difference between who you are and who you want to be is what you do."
-            </p>
           </div>
         </motion.div>
       </section>
@@ -108,41 +127,44 @@ export function Stories() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {stories.filter(s => s.id !== todayStory.id).slice(0, 6).map((story, index) => (
-              <motion.div
-                key={story.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={story.image}
-                    alt={story.title}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="px-3 py-1 bg-blue-600/90 text-white text-xs rounded-full">
-                      {story.category}
-                    </span>
+            {feed
+              .filter((s) => s.id !== todayStory.id)
+              .slice(0, 6)
+              .map((story, index) => (
+                <motion.div
+                  key={story.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={story.image}
+                      alt={story.title}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4">
+                      <span className="px-3 py-1 bg-blue-600/90 text-white text-xs rounded-full">
+                        {story.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                    {story.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {story.subtitle}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500 line-clamp-3">
-                    {story.content.substring(0, 150)}...
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                      {story.title}
+                    </h3>
+                    {story.subtitle && (
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">{story.subtitle}</p>
+                    )}
+                    <p className="text-sm text-gray-500 dark:text-gray-500 line-clamp-3">
+                      {story.content.substring(0, 150)}...
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
           </div>
         </div>
       </section>
@@ -155,9 +177,7 @@ export function Stories() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Your Story Could Be Next
-            </h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Your Story Could Be Next</h2>
             <p className="text-lg text-gray-100 mb-8 max-w-2xl mx-auto">
               Every success story starts with a struggle. What matters is what you do next.
             </p>
