@@ -1,13 +1,39 @@
 import { motion } from 'motion/react';
-import { Heart, BookmarkX } from 'lucide-react';
+import { Heart, BookmarkX, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { quotes } from '@/data/quotes';
 import { QuoteCard } from '@/components/QuoteCard';
 import { Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Favorites() {
   const { favorites } = useApp();
-  const favoriteQuotes = quotes.filter(q => favorites.includes(q.id));
+
+  const { data: favoriteQuotes = [], isLoading } = useQuery({
+    queryKey: ['favorite-quotes', favorites],
+    queryFn: async () => {
+      if (!favorites.length) return [];
+      const { data, error } = await supabase
+        .from('generated_quotes')
+        .select('*')
+        .in('id', favorites);
+      if (error) throw error;
+      return (data ?? []).map((r: {
+        id: number;
+        text: string;
+        author: string;
+        category: string[] | null;
+        image_url: string | null;
+      }) => ({
+        id: r.id,
+        text: r.text,
+        author: r.author,
+        category: r.category ?? [],
+        image: r.image_url || '',
+      }));
+    },
+    staleTime: 30_000,
+  });
 
   return (
     <div className="min-h-screen py-8">
@@ -28,7 +54,11 @@ export function Favorites() {
           </p>
         </motion.div>
 
-        {favoriteQuotes.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : favoriteQuotes.length > 0 ? (
           <>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
               {favoriteQuotes.length} {favoriteQuotes.length === 1 ? 'quote' : 'quotes'} saved
