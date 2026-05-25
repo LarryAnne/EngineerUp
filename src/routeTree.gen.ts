@@ -22,6 +22,8 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSeedContentRouteImport } from './routes/api/seed-content'
+import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 
 const StoriesRoute = StoriesRouteImport.update({
   id: '/stories',
@@ -88,6 +90,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSeedContentRoute = ApiSeedContentRouteImport.update({
+  id: '/api/seed-content',
+  path: '/api/seed-content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateRoute = ApiGenerateRouteImport.update({
+  id: '/api/generate',
+  path: '/api/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +115,8 @@ export interface FileRoutesByFullPath {
   '/quotes': typeof QuotesRoute
   '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/seed-content': typeof ApiSeedContentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +132,8 @@ export interface FileRoutesByTo {
   '/quotes': typeof QuotesRoute
   '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/seed-content': typeof ApiSeedContentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +150,8 @@ export interface FileRoutesById {
   '/quotes': typeof QuotesRoute
   '/signup': typeof SignupRoute
   '/stories': typeof StoriesRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/seed-content': typeof ApiSeedContentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +169,8 @@ export interface FileRouteTypes {
     | '/quotes'
     | '/signup'
     | '/stories'
+    | '/api/generate'
+    | '/api/seed-content'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +186,8 @@ export interface FileRouteTypes {
     | '/quotes'
     | '/signup'
     | '/stories'
+    | '/api/generate'
+    | '/api/seed-content'
   id:
     | '__root__'
     | '/'
@@ -181,6 +203,8 @@ export interface FileRouteTypes {
     | '/quotes'
     | '/signup'
     | '/stories'
+    | '/api/generate'
+    | '/api/seed-content'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +221,8 @@ export interface RootRouteChildren {
   QuotesRoute: typeof QuotesRoute
   SignupRoute: typeof SignupRoute
   StoriesRoute: typeof StoriesRoute
+  ApiGenerateRoute: typeof ApiGenerateRoute
+  ApiSeedContentRoute: typeof ApiSeedContentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +318,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/seed-content': {
+      id: '/api/seed-content'
+      path: '/api/seed-content'
+      fullPath: '/api/seed-content'
+      preLoaderRoute: typeof ApiSeedContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate': {
+      id: '/api/generate'
+      path: '/api/generate'
+      fullPath: '/api/generate'
+      preLoaderRoute: typeof ApiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +349,8 @@ const rootRouteChildren: RootRouteChildren = {
   QuotesRoute: QuotesRoute,
   SignupRoute: SignupRoute,
   StoriesRoute: StoriesRoute,
+  ApiGenerateRoute: ApiGenerateRoute,
+  ApiSeedContentRoute: ApiSeedContentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

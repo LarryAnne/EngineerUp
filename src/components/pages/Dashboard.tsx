@@ -1,14 +1,27 @@
 import { motion } from 'motion/react';
 import { TrendingUp, Award, CheckCircle, Flame, Target } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { challenges } from '@/data/challenges';
 import { Progress } from '@/components/ui/progress';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Dashboard() {
   const { streak, completedTasks, favorites } = useApp();
 
-  const completedChallenges = challenges.filter(c => completedTasks.includes(c.id));
-  const completionRate = Math.round((completedTasks.length / challenges.length) * 100);
+  const { data: completedChallenges = [] } = useQuery({
+    queryKey: ['dashboard-completed-tasks', completedTasks],
+    queryFn: async () => {
+      if (!completedTasks.length) return [] as Array<{ id: number; title: string; description: string; category: string }>;
+      const { data } = await supabase
+        .from('generated_tasks')
+        .select('id, title, description, category')
+        .in('id', completedTasks);
+      return (data ?? []) as Array<{ id: number; title: string; description: string; category: string }>;
+    },
+    staleTime: 30_000,
+  });
+
+  const completionRate = Math.min(100, completedTasks.length * 5);
 
   const stats = [
     {
