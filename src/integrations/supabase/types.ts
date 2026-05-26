@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          message: string
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: number
+          message: string
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: number
+          message?: string
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       daily_quote_log: {
         Row: {
           country: string | null
@@ -48,6 +75,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          quote_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          quote_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          quote_id?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       generated_quotes: {
         Row: {
@@ -163,6 +208,135 @@ export type Database = {
           id?: number
           minutes?: number
           title?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          country: string | null
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          contact: string | null
+          country: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          contact?: string | null
+          country?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          contact?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          author_name: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          author_name?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      streaks: {
+        Row: {
+          current_streak: number
+          last_visit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_visit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_visit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_submissions: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: number
+          proof_url: string | null
+          task_id: number
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: number
+          proof_url?: string | null
+          task_id: number
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: number
+          proof_url?: string | null
+          task_id?: number
+          user_id?: string
         }
         Relationships: []
       }
