@@ -14,7 +14,236 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_quote_log: {
+        Row: {
+          country: string | null
+          created_at: string
+          day: string
+          id: number
+          quote_id: number
+          user_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          day?: string
+          id?: number
+          quote_id: number
+          user_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          day?: string
+          id?: number
+          quote_id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_quote_log_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "generated_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_quotes: {
+        Row: {
+          author: string
+          category: string[]
+          country: string | null
+          created_at: string
+          generated_by: string
+          id: number
+          image_url: string | null
+          text: string
+          times_served: number
+          tone: string | null
+        }
+        Insert: {
+          author?: string
+          category?: string[]
+          country?: string | null
+          created_at?: string
+          generated_by?: string
+          id?: number
+          image_url?: string | null
+          text: string
+          times_served?: number
+          tone?: string | null
+        }
+        Update: {
+          author?: string
+          category?: string[]
+          country?: string | null
+          created_at?: string
+          generated_by?: string
+          id?: number
+          image_url?: string | null
+          text?: string
+          times_served?: number
+          tone?: string | null
+        }
+        Relationships: []
+      }
+      generated_stories: {
+        Row: {
+          category: string
+          content: string
+          country: string | null
+          created_at: string
+          generated_by: string
+          id: number
+          image_url: string | null
+          read_minutes: number
+          subtitle: string
+          title: string
+          tone: string | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          country?: string | null
+          created_at?: string
+          generated_by?: string
+          id?: number
+          image_url?: string | null
+          read_minutes?: number
+          subtitle?: string
+          title: string
+          tone?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          country?: string | null
+          created_at?: string
+          generated_by?: string
+          id?: number
+          image_url?: string | null
+          read_minutes?: number
+          subtitle?: string
+          title?: string
+          tone?: string | null
+        }
+        Relationships: []
+      }
+      generated_tasks: {
+        Row: {
+          category: string
+          country: string | null
+          created_at: string
+          description: string
+          difficulty: string
+          generated_by: string
+          id: number
+          minutes: number
+          title: string
+        }
+        Insert: {
+          category?: string
+          country?: string | null
+          created_at?: string
+          description: string
+          difficulty?: string
+          generated_by?: string
+          id?: number
+          minutes?: number
+          title: string
+        }
+        Update: {
+          category?: string
+          country?: string | null
+          created_at?: string
+          description?: string
+          difficulty?: string
+          generated_by?: string
+          id?: number
+          minutes?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      viewed_quotes: {
+        Row: {
+          quote_id: number
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          quote_id: number
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          quote_id?: number
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewed_quotes_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "generated_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viewed_stories: {
+        Row: {
+          story_id: number
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          story_id: number
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          story_id?: number
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewed_stories_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "generated_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viewed_tasks: {
+        Row: {
+          task_id: number
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          task_id: number
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          task_id?: number
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewed_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "generated_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
