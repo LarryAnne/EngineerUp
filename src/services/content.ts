@@ -64,7 +64,9 @@ async function triggerRefill(
   }
 }
 
-async function ensureSeeded(table: string) {
+async function ensureSeeded(
+  table: "generated_quotes" | "generated_stories" | "generated_tasks",
+) {
   const { count } = await supabase
     .from(table)
     .select("id", { count: "exact", head: true });
