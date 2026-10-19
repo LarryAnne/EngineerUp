@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { cachedRead } from "@/lib/content-cache";
 
 interface Profile {
   id: string;
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    const loadingDeadline = setTimeout(() => setLoading(false), 4000);
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
@@ -50,12 +52,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => { clearTimeout(loadingDeadline); subscription.unsubscribe(); };
   }, []);
 
   const loadProfile = async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-    if (data) setProfile(data as Profile);
+    const data = await cachedRead<Profile | null>(`profile:${userId}`, async signal => {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle().abortSignal(signal);
+      if (error) throw error;
+      return data as Profile | null;
+    }, null);
+    setProfile(data);
   };
 
   const signIn = async (email: string, password: string) => {

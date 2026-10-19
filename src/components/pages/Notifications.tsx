@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { cachedRead } from "@/lib/content-cache";
 import { motion } from "motion/react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -15,19 +16,16 @@ interface Notification {
 
 export function Notifications() {
   const { user, profile } = useAuth();
-  const [items, setItems] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      let query = supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(50);
-      const { data } = await query;
-      const all = (data as Notification[]) || [];
-      const country = profile?.country || null;
-      setItems(all.filter((n) => !n.country || n.country === country));
-      setLoading(false);
-    })();
-  }, [profile]);
+  const { data: items = [], isLoading: loading } = useQuery({
+    queryKey: ['notifications', user?.id, profile?.country], enabled: !!user,
+    networkMode: 'always', refetchInterval: 30_000,
+    queryFn: () => cachedRead<Notification[]>(`notifications:${user?.id}:${profile?.country ?? ''}`, async signal => {
+      const { data, error } = await supabase.from('notifications').select('*')
+        .order('created_at', { ascending: false }).limit(50).abortSignal(signal);
+      if (error) throw error;
+      return ((data ?? []) as Notification[]).filter(n => !n.country || n.country === profile?.country);
+    }, []),
+  });
 
   if (!user) {
     return (

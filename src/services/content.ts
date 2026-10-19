@@ -123,8 +123,14 @@ export async function getTodayStory(opts: {
   userId: string | null;
   country: string | null;
 }): Promise<GStory | null> {
-  const feed = await getStoryFeed({ ...opts, limit: 1 });
-  return feed[0] ?? null;
+  const key = `today-story:${opts.userId ?? 'guest'}:${new Date().toISOString().slice(0, 10)}`;
+  const previous = readLocal<GStory | null>(key, null);
+  const feed = await getStoryFeed({ ...opts, limit: 100 });
+  const pool = readLocal<GStory[]>('stories', backupStories);
+  const same = previous && pool.find(s => s.id === previous.id);
+  const pick = same || feed[0] || previous || backupStories[0] || null;
+  if (pick) writeLocal(key, pick);
+  return pick;
 }
 
 export async function markStoryViewed(userId: string, storyId: number) {
@@ -162,8 +168,14 @@ export async function getTodayTask(opts: {
   userId: string | null;
   country: string | null;
 }): Promise<GTask | null> {
-  const feed = await getTaskFeed({ ...opts, limit: 1 });
-  return feed[0] ?? null;
+  const key = `today-task:${opts.userId ?? 'guest'}:${new Date().toISOString().slice(0, 10)}`;
+  const previous = readLocal<GTask | null>(key, null);
+  const feed = await getTaskFeed({ ...opts, limit: 200 });
+  const pool = readLocal<GTask[]>('tasks', backupTasks);
+  const same = previous && pool.find(t => t.id === previous.id);
+  const pick = same || feed[0] || previous || backupTasks[0] || null;
+  if (pick) writeLocal(key, pick);
+  return pick;
 }
 
 export async function markTaskViewed(userId: string, taskId: number) {

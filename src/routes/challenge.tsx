@@ -6,6 +6,10 @@ export const Route = createFileRoute("/challenge")({
     meta: [
       { title: "Daily Challenge — EngineerUp" },
       { name: "description", content: "Small, consistent actions lead to massive results. Take today's challenge." },
+      { property: "og:title", content: "Daily Challenge \u2014 EngineerUp" },
+      { property: "og:description", content: "Small, consistent actions lead to massive results. Take today's challenge." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Challenge,

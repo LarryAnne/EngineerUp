@@ -8,6 +8,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Built for African Year One software engineering students. Real stories, practical advice, and daily motivation to help you succeed." },
       { property: "og:title", content: "EngineerUp" },
       { property: "og:description", content: "Empowering African software engineering students with realistic motivation and practical guidance." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Home,
