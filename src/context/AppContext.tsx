@@ -51,11 +51,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Migrate any guest favorites
       const guestFavs: number[] = JSON.parse(localStorage.getItem('favorites') || '[]');
       if (guestFavs.some(id => id > 0)) {
-        const { error } = await supabase.from('favorites').upsert(
-          guestFavs.filter(id => id > 0).map((quote_id) => ({ user_id: user.id, quote_id })),
-          { onConflict: 'user_id,quote_id', ignoreDuplicates: true }
-        );
-        if (!error) localStorage.removeItem('favorites');
+        const migrated = await cachedRead(`guest-migration:${user.id}`, async signal => {
+          const { error } = await supabase.from('favorites').upsert(
+            guestFavs.filter(id => id > 0).map((quote_id) => ({ user_id: user.id, quote_id })),
+            { onConflict: 'user_id,quote_id', ignoreDuplicates: true }
+          ).abortSignal(signal);
+          if (error) throw error;
+          return true;
+        }, false);
+        if (migrated) localStorage.removeItem('favorites');
       }
       const snapshot = await cachedRead<{ favorites: number[]; tasks: number[]; streak: number; lastVisit: string | null }>(`account:${user.id}`, async signal => {
         const [favs, tasks, progress] = await Promise.all([

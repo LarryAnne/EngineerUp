@@ -77,6 +77,7 @@ export async function getQuoteFeed(opts: {
   const limit = opts.limit ?? 30;
   const pool = await cachedRead<GQuote[]>("quotes", async (signal) => {
     const { data, error } = await supabase.from("generated_quotes").select("*").order("id", { ascending: false }).limit(300).abortSignal(signal);
+    if (!error && !data?.length) void triggerRefill("quote", opts.country);
     if (error || !data?.length) throw error ?? new Error("Empty pool");
     return data.map(mapQuote);
   }, backupQuotes);
@@ -108,6 +109,7 @@ export async function getStoryFeed(opts: {
   const limit = opts.limit ?? 12;
   const pool = await cachedRead<GStory[]>("stories", async (signal) => {
     const { data, error } = await supabase.from("generated_stories").select("*").order("id", { ascending: false }).limit(100).abortSignal(signal);
+    if (!error && !data?.length) void triggerRefill("story", opts.country);
     if (error || !data?.length) throw error ?? new Error("Empty pool");
     return data.map(r => ({ id: r.id, title: r.title, subtitle: r.subtitle ?? "", content: r.content,
       category: r.category, country: r.country, tone: r.tone, read_minutes: r.read_minutes,
@@ -155,6 +157,7 @@ export async function getTaskFeed(opts: {
   const limit = opts.limit ?? 12;
   const pool = await cachedRead<GTask[]>("tasks", async (signal) => {
     const { data, error } = await supabase.from("generated_tasks").select("*").order("id", { ascending: false }).limit(200).abortSignal(signal);
+    if (!error && !data?.length) void triggerRefill("task", opts.country);
     if (error || !data?.length) throw error ?? new Error("Empty pool");
     return data as GTask[];
   }, backupTasks);
