@@ -4,34 +4,16 @@ import { useApp } from '@/context/AppContext';
 import { QuoteCard } from '@/components/QuoteCard';
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { getFavoriteQuotes } from '@/services/content';
 
 export function Favorites() {
   const { favorites } = useApp();
 
   const { data: favoriteQuotes = [], isLoading } = useQuery({
     queryKey: ['favorite-quotes', favorites],
-    queryFn: async () => {
-      if (!favorites.length) return [];
-      const { data, error } = await supabase
-        .from('generated_quotes')
-        .select('*')
-        .in('id', favorites);
-      if (error) throw error;
-      return (data ?? []).map((r: {
-        id: number;
-        text: string;
-        author: string;
-        category: string[] | null;
-        image_url: string | null;
-      }) => ({
-        id: r.id,
-        text: r.text,
-        author: r.author,
-        category: r.category ?? [],
-        image: r.image_url || '',
-      }));
-    },
+    queryFn: () => getFavoriteQuotes(favorites),
+    networkMode: 'always',
+    refetchInterval: 30_000,
     staleTime: 30_000,
   });
 
