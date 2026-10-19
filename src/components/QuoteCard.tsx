@@ -15,8 +15,10 @@ export function QuoteCard({ quote, index = 0 }: QuoteCardProps) {
   const [copied, setCopied] = useState(false);
   const favorited = isFavorite(quote.id);
 
+  const shareText = buildQuoteShareText(quote);
+
   const handleCopy = async () => {
-    const text = `"${quote.text}" - ${quote.author}`;
+    const text = shareText;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
