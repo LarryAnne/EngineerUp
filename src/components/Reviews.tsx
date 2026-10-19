@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { cachedRead } from "@/lib/content-cache";
 
 interface Review {
   id: string;
@@ -16,21 +18,18 @@ interface Review {
 
 export function Reviews() {
   const { user, profile } = useAuth();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const { data: reviews = [], refetch: load } = useQuery({
+    queryKey: ['public-reviews'], networkMode: 'always', refetchInterval: 30_000,
+    queryFn: () => cachedRead<Review[]>('reviews', async signal => {
+      const { data, error } = await supabase.from('reviews').select('*')
+        .order('created_at', { ascending: false }).limit(20).abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Review[];
+    }, []),
+  });
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const load = async () => {
-    const { data } = await supabase
-      .from("reviews")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(20);
-    setReviews((data as Review[]) || []);
-  };
-
-  useEffect(() => { load(); }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

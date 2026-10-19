@@ -16,6 +16,9 @@ export function useQuoteFeed(limit = 30) {
   return useQuery({
     queryKey: ["quote-feed", userId, country, limit],
     queryFn: () => getQuoteFeed({ userId, country, limit }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60_000,
   });
 }
@@ -27,6 +30,9 @@ export function useDailyQuote() {
   return useQuery({
     queryKey: ["daily-quote", userId, country],
     queryFn: () => getDailyQuote({ userId, country }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60 * 60_000,
   });
 }
@@ -38,6 +44,9 @@ export function useStoryFeed(limit = 12) {
   return useQuery({
     queryKey: ["story-feed", userId, country, limit],
     queryFn: () => getStoryFeed({ userId, country, limit }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60_000,
   });
 }
@@ -49,6 +58,9 @@ export function useTodayStory() {
   return useQuery({
     queryKey: ["today-story", userId, country],
     queryFn: () => getTodayStory({ userId, country }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60 * 60_000,
   });
 }
@@ -60,6 +72,9 @@ export function useTaskFeed(limit = 12) {
   return useQuery({
     queryKey: ["task-feed", userId, country, limit],
     queryFn: () => getTaskFeed({ userId, country, limit }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60_000,
   });
 }
@@ -71,6 +86,9 @@ export function useTodayTask() {
   return useQuery({
     queryKey: ["today-task", userId, country],
     queryFn: () => getTodayTask({ userId, country }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    networkMode: "always",
     staleTime: 60 * 60_000,
   });
 }
