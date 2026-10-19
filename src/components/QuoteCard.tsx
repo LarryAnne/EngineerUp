@@ -4,6 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { buildQuoteShareText } from '@/lib/share-text';
 
 interface QuoteCardProps {
   quote: Quote;
@@ -15,8 +16,10 @@ export function QuoteCard({ quote, index = 0 }: QuoteCardProps) {
   const [copied, setCopied] = useState(false);
   const favorited = isFavorite(quote.id);
 
+  const shareText = buildQuoteShareText(quote);
+
   const handleCopy = async () => {
-    const text = `"${quote.text}" - ${quote.author}`;
+    const text = shareText;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -28,7 +31,7 @@ export function QuoteCard({ quote, index = 0 }: QuoteCardProps) {
   };
 
   const handleShare = async () => {
-    const text = `"${quote.text}" - ${quote.author}`;
+    const text = shareText;
     if (navigator.share) {
       try {
         await navigator.share({ text });
