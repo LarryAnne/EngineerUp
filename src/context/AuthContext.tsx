@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = async (userId: string) => {
     const data = await cachedRead<Profile | null>(`profile:${userId}`, async signal => {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle().abortSignal(signal);
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).abortSignal(signal).maybeSingle();
       if (error) throw error;
       return data as Profile | null;
     }, null);

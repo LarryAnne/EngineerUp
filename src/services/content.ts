@@ -201,11 +201,11 @@ export async function getDailyQuote(opts: {
   if (opts.userId) {
     const existing = await cachedRead<GQuote | null>(key, async (signal) => {
       const { data: log, error } = await supabase.from("daily_quote_log").select("quote_id")
-        .eq("user_id", opts.userId ?? "").eq("day", today).maybeSingle().abortSignal(signal);
+        .eq("user_id", opts.userId ?? "").eq("day", today).abortSignal(signal).maybeSingle();
       if (error) throw error;
       if (!log) return null;
       const { data, error: quoteError } = await supabase.from("generated_quotes").select("*")
-        .eq("id", log.quote_id).maybeSingle().abortSignal(signal);
+        .eq("id", log.quote_id).abortSignal(signal).maybeSingle();
       if (quoteError) throw quoteError;
       return data ? mapQuote(data) : null;
     }, null);

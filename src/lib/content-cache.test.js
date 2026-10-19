@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { cachedRead, readLocal, writeLocal, rememberViewed, localViewed } from './content-cache';
+import { cachedRead, readLocal, writeLocal, rememberViewed, localViewed } from './content-cache.ts';
 
-const saved = new Map<string, string>();
-const browser = { localStorage: { getItem: (key: string) => saved.get(key) ?? null, setItem: (key: string, value: string) => saved.set(key, value) } };
+const saved = new Map();
+const browser = { localStorage: { getItem: (key) => saved.get(key) ?? null, setItem: (key, value) => saved.set(key, value) } };
 Object.defineProperty(globalThis, 'window', { configurable: true, value: browser });
 afterEach(() => saved.clear());
 
@@ -14,7 +14,7 @@ describe('content availability', () => {
       .toEqual([{ id: 72, text: 'Generated content' }]);
   });
   test('a hung request falls back within the deadline and is aborted', async () => {
-    let signal: AbortSignal | undefined;
+    let signal;
     expect(await cachedRead('hung', s => { signal = s; return new Promise(() => {}); }, ['Backup'], 10)).toEqual(['Backup']);
     expect(signal?.aborted).toBe(true);
   });
