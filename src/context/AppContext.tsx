@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { cachedRead } from '@/lib/content-cache';
 
 interface AppContextType {
   favorites: number[];
@@ -49,35 +50,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (async () => {
       // Migrate any guest favorites
       const guestFavs: number[] = JSON.parse(localStorage.getItem('favorites') || '[]');
-      if (guestFavs.length) {
-        await supabase.from('favorites').upsert(
-          guestFavs.map((quote_id) => ({ user_id: user.id, quote_id })),
+      if (guestFavs.some(id => id > 0)) {
+        const { error } = await supabase.from('favorites').upsert(
+          guestFavs.filter(id => id > 0).map((quote_id) => ({ user_id: user.id, quote_id })),
           { onConflict: 'user_id,quote_id', ignoreDuplicates: true }
         );
-        localStorage.removeItem('favorites');
+        if (!error) localStorage.removeItem('favorites');
       }
-      const { data: favs } = await supabase
-        .from('favorites')
-        .select('quote_id')
-        .eq('user_id', user.id);
-      if (favs) setFavorites(favs.map((f: any) => f.quote_id));
-
-      const { data: tasks } = await supabase
-        .from('task_submissions')
-        .select('task_id')
-        .eq('user_id', user.id)
-        .eq('completed', true);
-      if (tasks) setCompletedTasks(tasks.map((t: any) => t.task_id));
-
-      const { data: streakRow } = await supabase
-        .from('streaks')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (streakRow) {
-        setStreak((streakRow as any).current_streak || 0);
-        setLastVisit((streakRow as any).last_visit || null);
-      }
+      const snapshot = await cachedRead<{ favorites: number[]; tasks: number[]; streak: number; lastVisit: string | null }>(`account:${user.id}`, async signal => {
+        const [favs, tasks, progress] = await Promise.all([
+          supabase.from('favorites').select('quote_id').eq('user_id', user.id).abortSignal(signal),
+          supabase.from('task_submissions').select('task_id').eq('user_id', user.id).eq('completed', true).abortSignal(signal),
+          supabase.from('streaks').select('*').eq('user_id', user.id).abortSignal(signal).maybeSingle(),
+        ]);
+        if (favs.error || tasks.error || progress.error) throw favs.error ?? tasks.error ?? progress.error;
+        return { favorites: (favs.data ?? []).map(f => f.quote_id), tasks: (tasks.data ?? []).map(t => t.task_id),
+          streak: progress.data?.current_streak ?? 0, lastVisit: progress.data?.last_visit ?? null };
+      }, { favorites: [], tasks: [], streak: 0, lastVisit: null });
+      setFavorites(snapshot.favorites);
+      setCompletedTasks(snapshot.tasks);
+      setStreak(snapshot.streak);
+      setLastVisit(snapshot.lastVisit);
       updateStreakRemote();
     })();
   }, [user]);
@@ -138,7 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleFavorite = async (quoteId: number) => {
-    if (user) {
+    if (user && quoteId > 0) {
       if (favorites.includes(quoteId)) {
         await supabase.from('favorites').delete().eq('user_id', user.id).eq('quote_id', quoteId);
         setFavorites((p) => p.filter((id) => id !== quoteId));
@@ -168,12 +161,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const markTaskComplete = async (taskId: number, proofUrl?: string) => {
     if (user) {
-      await supabase.from('task_submissions').insert({
+      if (taskId < 0) throw new Error('This backup task can be read, but cannot be submitted. Try a live task when the service returns.');
+      const { error } = await supabase.from('task_submissions').insert({
         user_id: user.id,
         task_id: taskId,
         completed: true,
         proof_url: proofUrl ?? null,
       });
+      if (error) throw error;
     }
     setCompletedTasks((prev) => {
       const next = prev.includes(taskId) ? prev : [...prev, taskId];

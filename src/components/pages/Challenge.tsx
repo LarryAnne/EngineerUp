@@ -56,7 +56,12 @@ export function Challenge() {
       toast.error('Please upload a proof image first');
       return;
     }
-    await markTaskComplete(dailyChallenge.id, proofUrl);
+    try {
+      await markTaskComplete(dailyChallenge.id, proofUrl);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Your task could not be saved. Please try again when the service returns.');
+      return;
+    }
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
   };
