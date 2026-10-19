@@ -4,6 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { buildQuoteShareText } from '@/lib/share-text';
 
 interface QuoteCardProps {
   quote: Quote;
@@ -30,7 +31,7 @@ export function QuoteCard({ quote, index = 0 }: QuoteCardProps) {
   };
 
   const handleShare = async () => {
-    const text = `"${quote.text}" - ${quote.author}`;
+    const text = shareText;
     if (navigator.share) {
       try {
         await navigator.share({ text });
